@@ -137,7 +137,7 @@ public class MatchScreen implements Screen {
         	return;
         }
         
-        ball.handleCollisions(); 
+//        ball.handleCollisions(); 
                	
         if (ball.isGoal()) {
         	int side = ball.getGoalSide();
