@@ -4,8 +4,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.eblp.metegol.utils.Config;
 import com.eblp.metegol.utils.MyRenderer;
+import com.eblp.metegolserver.network.ServerThread;
 
 import enums.TeamType;
+import gameplay.Data;
 
 public class Ball {
 	private final int REGION_HEIGHT = 32;
@@ -14,7 +16,9 @@ public class Ball {
 	private Texture texture;
 	private Sprite sprite;
 	private int w, h;
-	private float dirX = 2, dirY = 0;
+
+	// og x = 2  /  y = 0
+	private float dirX = 0.5f, dirY = 0.5f;
 
 	private final float goalTop = Config.SCREEN_H / 2 + 60;
 	private final float goalBottom = Config.SCREEN_H / 2 - 60;
@@ -28,6 +32,8 @@ public class Ball {
 		goalSide = 0;
 		sprite.setPosition(x, y);
 		sprite.setSize(w, h);
+		Data.xBall = sprite.getX();
+		Data.yBall = sprite.getY();
 	}
 
 	public void handleCollisions() {
@@ -46,6 +52,10 @@ public class Ball {
 
 		sprite.setX(sprite.getX() + dirX);
 		sprite.setY(sprite.getY() + dirY);
+		
+		Data.xBall = sprite.getX();
+		Data.yBall = sprite.getY();
+		ServerThread.sendMessageAll("ball_position_" + String.valueOf(Data.xBall) + "," + String.valueOf(Data.yBall));
 	}
 
 	public float getDistanceFromGoalX(TeamType team) {
@@ -59,7 +69,8 @@ public class Ball {
 	}
 
 	public void goToGoal(TeamType team) {
-		applyImpulse(getDistanceFromGoalX(team) / 60, -getDistanceFromGoalY() / 60);
+//		applyImpulse(getDistanceFromGoalX(team) / 60, -getDistanceFromGoalY() / 60);
+		applyImpulse(getDistanceFromGoalX(team) / 90, -getDistanceFromGoalY() / 90);
 	}
 
 	public boolean isGoal() {
@@ -70,10 +81,13 @@ public class Ball {
 
 		// Pasa por el arco
 		if ((leftBorder || rightBorder) && (sprite.getY() < goalTop && sprite.getY() > goalBottom)) {
-			if (leftBorder)
+			if (leftBorder) {
 				goalSide = -1;
-			else if (rightBorder)
+				ServerThread.sendMessageAll("goal_left");
+			} else if (rightBorder) {
+				ServerThread.sendMessageAll("goal_right");
 				goalSide = 1;
+			}
 		}
 
 		return goalSide != 0;
