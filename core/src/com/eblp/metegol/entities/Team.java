@@ -65,13 +65,14 @@ public class Team {
 		}
 	}
 
-	public void init() {
-		gkStick.init();
-		defStick.init();
-		midStick.init();
-		fwdStick.init();
+	public void update() {
+		gkStick.update();
+		defStick.update();
+		midStick.update();
+		fwdStick.update();
 	}
 
+	// Detecta contacto entre pelota y jugador de un palo
 	public void detectCollision(Ball ball) {
 		float ballX = ball.getX();
 
@@ -95,7 +96,9 @@ public class Team {
 		}
 	}
 
+	// Avisa al servidor cuando patea algún palo
 	public void handleStickKick(PlayersStick stick, Ball ball) {
+		
 		float ballY = ball.getY();
 
 		for (Player p : stick.getPlayers()) {
@@ -103,6 +106,7 @@ public class Team {
 				stickKick(stick);
 				// Envia mensaje de patear
 				ServerThread.sendMessageAll("kick_" + (teamType == TeamType.HOME ? "P1" : "P2") + "_" + stick.getStickType().getName());
+				// Si no es un delantero
 				if (stick.getStickType() != StickType.FWD) {
 					float dir = (float) Math.round(Math.random()); // Dirije la pelota en diagonal hacia arriba o
 																	// hacia abajo aleatoriamente
@@ -110,6 +114,7 @@ public class Team {
 					ball.applyImpulse(teamType == TeamType.HOME ? 1 : -1, dir == 0 ? 1 : -1);// copia para ir mas
 																								// despacio
 				} else {
+					// Si es un delantero la pelota se apunta al arco
 					ball.goToGoal(teamType == TeamType.HOME ? TeamType.VISITOR : TeamType.HOME);
 				}
 			} else {
@@ -140,15 +145,6 @@ public class Team {
 
 	public String getName() {
 		return name;
-	}
-
-	public Player[] getAllPlayers() {
-		Player[] players = new Player[11];
-		System.arraycopy(gkStick.getPlayers(), 0, players, 0, 1);
-		System.arraycopy(defStick.getPlayers(), 0, players, 1, 3);
-		System.arraycopy(midStick.getPlayers(), 0, players, 4, 4);
-		System.arraycopy(fwdStick.getPlayers(), 0, players, 8, 3);
-		return players;
 	}
 
 	public void drawLogo() {

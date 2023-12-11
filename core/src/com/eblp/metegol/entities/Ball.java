@@ -22,6 +22,7 @@ public class Ball {
 
 	private final float goalTop = Config.SCREEN_H / 2 + 60;
 	private final float goalBottom = Config.SCREEN_H / 2 - 60;
+	// Relleno para que la pelota rebote cuando toca en el borde
 	private final float padding = 35;
 
 	public Ball(float x, float y, int w, int h) {
@@ -58,16 +59,19 @@ public class Ball {
 		ServerThread.sendMessageAll("ball_position_" + String.valueOf(Data.xBall) + "," + String.valueOf(Data.yBall));
 	}
 
+	// Distancia en X desde la pelota al arco del equipo seleccionado
 	public float getDistanceFromGoalX(TeamType team) {
 		float pitch = Config.SCREEN_W * 0.75f / 2;
 		float border = team == TeamType.VISITOR ? pitch : -pitch;
 		return Config.SCREEN_W / 2 + border - sprite.getX();
 	}
 
+	// Distancia en Y de cualquiera de los dos arcos
 	public float getDistanceFromGoalY() {
 		return sprite.getY() - Config.SCREEN_H / 2;
 	}
 
+	// Dirige la pelota al arco del equipo seleccionado
 	public void goToGoal(TeamType team) {
 //		applyImpulse(getDistanceFromGoalX(team) / 60, -getDistanceFromGoalY() / 60);
 		applyImpulse(getDistanceFromGoalX(team) / 90, -getDistanceFromGoalY() / 90);
@@ -79,14 +83,14 @@ public class Ball {
 
 		goalSide = 0;
 
-		// Pasa por el arco
+		// Detecta si la pelota está adentro de alguno de los 2 arcos
 		if ((leftBorder || rightBorder) && (sprite.getY() < goalTop && sprite.getY() > goalBottom)) {
 			if (leftBorder) {
 				goalSide = -1;
 				ServerThread.sendMessageAll("goal_left");
 			} else if (rightBorder) {
-				ServerThread.sendMessageAll("goal_right");
 				goalSide = 1;
+				ServerThread.sendMessageAll("goal_right");
 			}
 		}
 
@@ -97,6 +101,7 @@ public class Ball {
 		return goalSide;
 	}
 
+	// Posiciona la pelota en el centro de la cancha
 	public void placeOnCenter() {
 		sprite.setPosition(Config.SCREEN_W / 2 - 8, Config.SCREEN_H / 2 - 8);
 	}

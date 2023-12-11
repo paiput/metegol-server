@@ -41,7 +41,7 @@ public class PlayersStick {
 		sprite.setSize(w, h);
 	}
 	
-	public void init() {
+	public void update() {
 		
 		float bottom = Config.SCREEN_H/2 - h/2;
 		float top = Config.SCREEN_H/2 + h/2;
@@ -83,7 +83,7 @@ public class PlayersStick {
 			pIndex++;
 		}
 		
-		// Caso especial para el arquero
+		// Caso especial para que el arquero no salga del área chica
 		if (players.length == 1) {
 			Player gk = players[0];
 			if (gk.getY() > bottom + h*0.6f - gk.getH()/2) {
@@ -94,6 +94,7 @@ public class PlayersStick {
 		}		
 	}
 	
+	// Actualiza posiciones de jugadores con datos recibidos del servidor
 	private void updateGampeplayData(Player p, int index) {
 		if (team == TeamType.HOME) {
 			if (type == StickType.GK) Data.yGk1[index] = p.getY();

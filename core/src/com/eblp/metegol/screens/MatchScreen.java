@@ -61,6 +61,7 @@ public class MatchScreen implements Screen {
 		vGoal.setSize(32, 160);
 		vGoal.setPosition(vw/2 + pitch.getWidth()/2 - vGoal.getWidth() - 4, vh/2 - hGoal.getHeight()/2);
 		
+		// Pelota
 		ball = new Ball(Config.SCREEN_W/2-8, Config.SCREEN_H/2-8, 16, 16);
 		
 		// Equipo local
@@ -71,12 +72,15 @@ public class MatchScreen implements Screen {
 		vTeam = new Team("Independiente", "escudo-independiente-pixel.png", TeamType.VISITOR);
 		vTeam.setLineUp(pitch.getWidth(), pitch.getHeight());	
 		
+		// Mensaje de gol
 		goalAlert = new MyText("Gooool", Config.FONT, 128, Color.YELLOW);
 		goalAlert.setPosition(vw/2-goalAlert.getWidth()/2, vh/2+goalAlert.getHeight()/2);
 		
+		// Mensaje de fin de partido
 		matchEndAlert = new MyText("Fin del partido", Config.FONT, 128, Color.YELLOW);
 		matchEndAlert.setPosition(vw/2-matchEndAlert.getWidth()/2, vh/2+matchEndAlert.getHeight()/2);
 			
+		// Mensaje de espera
 		waiting = new MyText("Esperando jugadores", Config.FONT, 64, Color.WHITE);
 		waiting.setPosition(vw/2-waiting.getWidth()/2, vh/2-waiting.getHeight()/2);
 		
@@ -89,6 +93,7 @@ public class MatchScreen implements Screen {
 		// Limpia la pantalla
 		MyRenderer.cleanScreen(0, 0, 0);
 		
+		// Muestra el mensaje de espera hasta que arranque el juego
 		if (!Data.runGame) {
 			MyRenderer.batch.begin();
         	waiting.draw();
@@ -141,8 +146,8 @@ public class MatchScreen implements Screen {
         }
         
         // Habilita movimiento de palos
-        hTeam.init();
-        vTeam.init();
+        hTeam.update();
+        vTeam.update();
         
         // Gestiona interseccion entre jugador y pelota
         hTeam.detectCollision(ball);
