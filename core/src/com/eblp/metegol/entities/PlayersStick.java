@@ -116,6 +116,10 @@ public class PlayersStick {
 		return type;
 	}
 	
+	public float getX() {
+		return sprite.getX();
+	}
+	
 	public void draw() {
 		sprite.draw(MyRenderer.batch);
 		for (Player player : players) {

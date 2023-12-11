@@ -2,13 +2,11 @@ package com.eblp.metegol.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.eblp.metegol.entities.Ball;
 import com.eblp.metegol.entities.Team;
 import com.eblp.metegol.utils.Config;
-import com.eblp.metegol.utils.Global;
 import com.eblp.metegol.utils.MyImage;
 import com.eblp.metegol.utils.MyRenderer;
 import com.eblp.metegol.utils.MyText;
@@ -16,6 +14,7 @@ import com.eblp.metegolserver.MetegolServer;
 import com.eblp.metegolserver.network.ServerThread;
 
 import enums.TeamType;
+import gameplay.Data;
 
 public class MatchScreen implements Screen {
 	private MetegolServer game;
@@ -24,9 +23,7 @@ public class MatchScreen implements Screen {
 	private MyImage hGoal, vGoal; // Arcos
 	private MyText goalAlert, matchEndAlert, waiting;
 	private ServerThread st;
-	
-	private boolean matchEnded = false;
-	
+		
 	private Team hTeam, vTeam;
 	private Ball ball;
 	
@@ -83,7 +80,7 @@ public class MatchScreen implements Screen {
 		waiting = new MyText("Esperando jugadores", Config.FONT, 64, Color.WHITE);
 		waiting.setPosition(vw/2-waiting.getWidth()/2, vh/2-waiting.getHeight()/2);
 		
-		// Se inicia el hilo del cliente
+		// Se inicia el hilo del servidor
 		st.start();
 	}
 
@@ -92,24 +89,17 @@ public class MatchScreen implements Screen {
 		// Limpia la pantalla
 		MyRenderer.cleanScreen(0, 0, 0);
 		
-		if (!Global.start) {
+		if (!Data.runGame) {
 			MyRenderer.batch.begin();
         	waiting.draw();
         	MyRenderer.batch.end();
         	return;
 		}
 		
-		if (matchEnded) {
-			MyRenderer.batch.begin();
-        	matchEndAlert.draw();
-        	MyRenderer.batch.end();
-        	return;
-        }
-		
 		// Termina el partido
-        if (hTeam.getScore() == 2 || vTeam.getScore() == 2) {
-        	String winner = hTeam.getScore() == 2 ? hTeam.getName() : vTeam.getName();
-        	matchEnded = true;
+        if (Data.score1 == 2 || Data.score2 == 2) {
+        	Data.resetScore();
+        	ServerThread.restartClients();
         	return;
         }
         
@@ -137,13 +127,14 @@ public class MatchScreen implements Screen {
         	return;
         }
         
-        // esto si
         ball.handleCollisions(); 
                	
         if (ball.isGoal()) {
         	int side = ball.getGoalSide();
-        	if (side == -1) vTeam.scoreGoal();
-        	else hTeam.scoreGoal();
+        	if (side == -1)
+        		vTeam.scoreGoal();   		
+        	else 
+        		hTeam.scoreGoal();
         	ball.placeOnCenter();
         	showGoalAlert = true;
         	goalAlertOpacity = 0;

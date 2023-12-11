@@ -6,8 +6,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-import com.eblp.metegol.utils.Global;
-
 import gameplay.Data;
 
 public class ServerThread extends Thread {
@@ -15,7 +13,7 @@ public class ServerThread extends Thread {
 	private static DatagramSocket connection;
 	private boolean end = false;
 	private static NetworkAddress[] clients = new NetworkAddress[2];
-	private int amountClients = 0;
+	private static int amountClients = 0;
 
 	public ServerThread() {
 		try {
@@ -24,7 +22,14 @@ public class ServerThread extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
+	// Reinicia el array clientes
+	public static void restartClients() {
+		clients = new NetworkAddress[2];
+		amountClients = 0;
+	}
 
+	// Envia mensaje a un cliente especifico
 	private static void sendMessage(String msg, InetAddress ip, int port) {
 		byte[] data = msg.getBytes();
 		DatagramPacket dp = new DatagramPacket(data, data.length, ip, port);
@@ -35,6 +40,7 @@ public class ServerThread extends Thread {
 		}
 	}
 
+	// Envia mensaje a todos los clientes
 	public static void sendMessageAll(String msg) {
 		for (int i = 0; i < clients.length; i++) {
 			sendMessage(msg, clients[i].getIp(), clients[i].getPort());
@@ -59,6 +65,7 @@ public class ServerThread extends Thread {
 	private void processMessage(DatagramPacket dp) {
 		String msg = new String(dp.getData()).trim();
 		System.out.println("Mensaje servidor: " + msg);
+		System.out.println("  - Clients: " + clients.length);
 
 		int clientId = -1;
 		if (amountClients > 1) {
@@ -69,22 +76,21 @@ public class ServerThread extends Thread {
 			}
 		}
 
-		if (amountClients < 2) {
-			if (msg.equals("Conexion")) {
-				if (amountClients < 2) {
-					clients[amountClients] = new NetworkAddress(dp.getAddress(), dp.getPort());
-					sendMessage("OK", clients[amountClients].getIp(), clients[amountClients].getPort());
-					amountClients++;
-					if (amountClients == 2) {
-						System.out.println("Server detecta 2 jugadores: EMPEZAR");
-						// Habilita el juego para empezar
-						Global.start = true;
-						for (int i = 0; i < clients.length; i++) {
-							sendMessage("Empieza", clients[i].getIp(), clients[i].getPort());
-						}
-					}
+		if (amountClients < 2 || msg.equals("Conexion")) {
+			if (amountClients < 2) {
+				clients[amountClients] = new NetworkAddress(dp.getAddress(), dp.getPort());
+				sendMessage("OK", clients[amountClients].getIp(), clients[amountClients].getPort());
+				amountClients++;
+			}
+			if (amountClients == 2) {
+				System.out.println("Server detecta 2 jugadores: EMPEZAR");
+				// Habilita el juego para empezar
+				Data.runGame = true;
+				for (int i = 0; i < clients.length; i++) {
+					sendMessage("Empieza", clients[i].getIp(), clients[i].getPort());
 				}
 			}
+
 		} else {
 			if (clientId <= 1) {
 				if (msg.equals("key_up")) {
